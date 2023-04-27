@@ -3,6 +3,7 @@ const bodyParser = require('body-parser')
 const vCardsJS = require('vcards-js');
 const cors = require("cors");
 const axios = require("axios");
+const striptags = require("striptags");
 
 
 const app = express();
@@ -38,7 +39,7 @@ app.post('/', async (req, res) => {
     vCard.email = req.body.socialMedia?.['email']?.[0]?.url;
     vCard.workEmail = req.body.email;
     vCard.cellPhone = req.body.phoneNumber?.[0]?.number;
-    vCard.note = req.body.aboutUs;
+    vCard.note = striptags(req.body.aboutUs, [], '\n');
     vCard.workFax = req.body.fax;
 
 //or embed image
