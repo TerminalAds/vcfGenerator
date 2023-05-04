@@ -43,7 +43,7 @@ app.post('/', async (req, res) => {
     vCard.workFax = req.body.fax;
 
 //or embed image
-    vCard.photo.embedFromString(await convertToBase64(req.body?.photo?.profile), 'image/png');
+    vCard.photo.embedFromString(await convertToBase64(req.body?.photo?.profile), 'PNG');
 
 //set URL where the vCard can be found
 //     vCard.source = 'http://mywebpage/myvcard.vcf';
