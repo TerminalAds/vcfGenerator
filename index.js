@@ -17,7 +17,7 @@ const port = 2500;
 
 async function convertToBase64(img) {
     let base64 = null;
-    await axios.get(img).then((x) => {
+    await axios.get(img,{responseType:"arraybuffer"}).then((x) => {
         base64 = Buffer.from(x.data).toString('base64');
     }).catch((e) => {
     });
