@@ -28,7 +28,6 @@ app.post("/", async (req, res) => {
   try {
     const vCard = vCardsJS();
 
-    // set properties
     vCard.firstName = req.body.userName || "";
     vCard.nickname = req.body.visitName || "";
     vCard.organization = req.body.organizationName || "";
@@ -54,7 +53,6 @@ app.post("/", async (req, res) => {
     vCard.note = striptags(aboutUsRaw, [], "\n");
     vCard.workFax = req.body.fax || "";
 
-    // embed image
     if (req.body?.photo?.profile) {
       const base64Img = await convertToBase64(req.body.photo.profile);
       if (base64Img) {
@@ -64,8 +62,9 @@ app.post("/", async (req, res) => {
 
     let vcardString = vCard.getFormattedString();
 
-    vcardString = vcardString.replace(/;CHARSET=UTF-8/g, "");
-    vcardString = vcardString.replace(/END:VCARD[\r\n]*/g, "");
+    vcardString = vcardString.replace(/;CHARSET=UTF-8/gi, "");
+
+    vcardString = vcardString.replace(/END:VCARD[\s\S]*$/i, "").trim() + "\r\n";
 
     const sm = req.body.socialMedia;
     let itemCounter = 1;
@@ -98,11 +97,13 @@ app.post("/", async (req, res) => {
       }
     }
 
+    // بستن مجدد فایل vCard به صورت صحیح
     vcardString += "END:VCARD\r\n";
 
     res.set("Content-Type", 'text/vcard; charset=utf-8; name="enesser.vcf"');
     res.set("Content-Disposition", 'inline; filename="enesser.vcf"');
 
+    // ارسال به صورت Base64
     res.send(Buffer.from(vcardString, "utf8").toString("base64"));
   } catch (error) {
     console.error("Error:", error);
