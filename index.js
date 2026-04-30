@@ -47,7 +47,11 @@ app.post("/", async (req, res) => {
 
     vCard.email = req.body.socialMedia?.["email"]?.[0]?.url || "";
     vCard.workEmail = req.body.email || "";
-    vCard.cellPhone = req.body.phoneNumber?.[0]?.number || "";
+
+    const phoneNumbers = req.body.phoneNumber;
+    if (phoneNumbers && phoneNumbers.length > 0) {
+      vCard.cellPhone = phoneNumbers[0].number || "";
+    }
 
     const aboutUsRaw = req.body.aboutUs || "";
     vCard.note = striptags(aboutUsRaw, [], "\n");
@@ -61,10 +65,17 @@ app.post("/", async (req, res) => {
     }
 
     let vcardString = vCard.getFormattedString();
-
     vcardString = vcardString.replace(/;CHARSET=UTF-8/gi, "");
-
     vcardString = vcardString.replace(/END:VCARD[\s\S]*$/i, "").trim() + "\r\n";
+
+    if (phoneNumbers && phoneNumbers.length > 1) {
+      for (let i = 1; i < phoneNumbers.length; i++) {
+        const extraNum = phoneNumbers[i].number;
+        if (extraNum) {
+          vcardString += `TEL;type=CELL:${extraNum}\r\n`;
+        }
+      }
+    }
 
     const sm = req.body.socialMedia;
 
