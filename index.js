@@ -28,7 +28,6 @@ app.post("/", async (req, res) => {
   try {
     const vCard = vCardsJS();
 
-    // تنظیم خصوصیات اصلی
     vCard.firstName = req.body.userName || "";
     vCard.nickname = req.body.visitName || "";
     vCard.organization = req.body.organizationName || "";
@@ -37,7 +36,6 @@ app.post("/", async (req, res) => {
     vCard.workPhone = req.body.companyNumber || "";
     vCard.role = req.body.workField || "";
 
-    // تنظیم آدرس
     if (vCard.homeAddress) {
       vCard.homeAddress.postalCode = req.body.codePostal || "";
       vCard.homeAddress.label = "آدرس";
@@ -47,17 +45,14 @@ app.post("/", async (req, res) => {
       vCard.homeAddress.countryRegion = req.body.country || "";
     }
 
-    // ایمیل و شماره تماس
     vCard.email = req.body.socialMedia?.["email"]?.[0]?.url || "";
     vCard.workEmail = req.body.email || "";
     vCard.cellPhone = req.body.phoneNumber?.[0]?.number || "";
 
-    // درباره ما و فکس
     const aboutUsRaw = req.body.aboutUs || "";
     vCard.note = striptags(aboutUsRaw, [], "\n");
     vCard.workFax = req.body.fax || "";
 
-    // افزودن تصویر
     if (req.body?.photo?.profile) {
       const base64Img = await convertToBase64(req.body.photo.profile);
       if (base64Img) {
@@ -65,21 +60,16 @@ app.post("/", async (req, res) => {
       }
     }
 
-    // دریافت رشته اولیه vCard
     let vcardString = vCard.getFormattedString();
 
-    // حذف CHARSET برای جلوگیری از نمایش متن اضافه در سافاری
     vcardString = vcardString.replace(/;CHARSET=UTF-8/gi, "");
 
-    // باز کردن انتهای فایل به صورت ایمن
     vcardString = vcardString.replace(/END:VCARD[\s\S]*$/i, "").trim() + "\r\n";
 
     const sm = req.body.socialMedia;
 
-    // شروع از 50 برای جلوگیری از تداخل با item1 و item2 که خود vcards-js می‌سازد
     let itemCounter = 50;
 
-    // اضافه کردن لینک‌های شبکه‌های اجتماعی با فرمت اختصاصی اپل (Apple Contacts)
     if (sm) {
       if (sm["whatsapp"]?.[0]?.url) {
         vcardString += `item${itemCounter}.URL:${sm["whatsapp"][0].url}\r\n`;
@@ -108,14 +98,11 @@ app.post("/", async (req, res) => {
       }
     }
 
-    // بستن مجدد فایل vCard به صورت صحیح
     vcardString += "END:VCARD\r\n";
 
-    // تنظیم هدرهای پاسخ
     res.set("Content-Type", 'text/vcard; charset=utf-8; name="enesser.vcf"');
     res.set("Content-Disposition", 'inline; filename="enesser.vcf"');
 
-    // ارسال پاسخ به صورت Base64
     res.send(Buffer.from(vcardString, "utf8").toString("base64"));
   } catch (error) {
     console.error("Error:", error);
